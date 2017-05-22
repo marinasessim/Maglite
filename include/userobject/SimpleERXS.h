@@ -4,28 +4,31 @@
 /*                       Derived class                          */
 /****************************************************************/
 
-#ifndef SCATTERINGCROSSSECTIONUO_H
-#define SCATTERINGCROSSSECTIONUO_H
+#ifndef SIMPLEERXS_H
+#define SIMPLEERXS_H
 
 // MOOSE includes
 #include "ElasticRecoilCrossSectionBaseUserObject.h"
 
 // Forward Declarations
-class ScatteringCrossSectionUO;
+class SimpleERXS;
 
 template <>
-InputParameters validParams<ScatteringCrossSectionUO>();
+InputParameters validParams<SimpleERXS>();
 
-class ScatteringCrossSectionUO : public ElasticRecoilCrossSectionBaseUserObject
+class SimpleERXS : public ElasticRecoilCrossSectionBaseUserObject
 {
 public:
-  ScatteringCrossSectionUO(const InputParameters & parameters);
+  SimpleERXS(const InputParameters & parameters);
 
   /**
-   * Overrides elasticCrossSection() from the Base class.
+   * Overrides from the base class.
    */
   virtual Real elasticCrossSection() override;
 
+  virtual Real neutronSpectrum() override;
+
+  virtual Real scatteringLaw() override;
 
 protected:
 

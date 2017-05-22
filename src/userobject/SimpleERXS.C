@@ -1,28 +1,28 @@
 /****************************************************************/
-/*            Elastic Recoil Cross Section Base                 */
-/*          Base class for the further calculations             */
-/*              Purely virtual (abstract) class                 */
+/*            Scattering Cross Section User Object              */
+/*           Calculation of elastic cross section               */
+/*                       Derived class                          */
 /****************************************************************/
 
-#include "ScatteringLawUO.h"
+#include "SimpleERXS.h"
 #include "ElasticRecoilCrossSectionBaseUserObject.h"
 
 template <>
 InputParameters
-validParams<ScatteringLawUO>()
+validParams<SimpleERXS>()
 {
   InputParameters params = validParams<ElasticRecoilCrossSectionBaseUserObject>();
 
   return params;
 }
 
-ScatteringLawUO::ScatteringLawUO(const InputParameters & parameters)
+SimpleERXS::SimpleERXS(const InputParameters & parameters)
   : ElasticRecoilCrossSectionBaseUserObject(parameters)
 {
 }
 
 Real
-ScatteringLawUO::scatteringLaw()
+SimpleERXS::elasticCrossSection()
 {
  return 1;
 }
