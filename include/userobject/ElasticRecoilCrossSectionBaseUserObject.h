@@ -36,6 +36,10 @@ public:
 
 protected:
 
+  QBase * _quadrature;
+  std::vector<Real> _quad_points;
+  std::vector<Real> _quad_weights;
+
   std::vector<Real> _atomic_mass;
   std::vector<unsigned int> _isotope_type;
   unsigned int _number_isotope;

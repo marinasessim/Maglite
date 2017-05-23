@@ -37,6 +37,19 @@ ElasticRecoilCrossSectionBaseUserObject::ElasticRecoilCrossSectionBaseUserObject
     _incident_energy_boundaries(getParam<std::vector<Real>>("incident_energy")),
     _recoil_energy_boundaries(getParam<std::vector<Real>>("recoil_energy"))
 {
+/**
+ * See "enum_order.h and enum_quadrature_type.h"
+ */
+_quadrature = QBase::build(QGAUSS, 1, FIFTH).release();
+
+const std::vector<Point> & temp_points = _quadrature->get_points();
+for (auto & pt : temp_points)
+{
+  _quad_points.push_back(pt(0));
+}
+
+_quad_weights = _quadrature->get_weights();
+
 }
 
 Real
