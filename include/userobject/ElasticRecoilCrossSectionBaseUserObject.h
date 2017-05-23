@@ -32,6 +32,8 @@ public:
 
   virtual void execute() override;
 
+  Real legendreP(unsigned int  n, Real x);
+
 protected:
 
   std::vector<Real> _atomic_mass;

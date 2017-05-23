@@ -39,6 +39,34 @@ ElasticRecoilCrossSectionBaseUserObject::ElasticRecoilCrossSectionBaseUserObject
 {
 }
 
+Real
+ElasticRecoilCrossSectionBaseUserObject::legendreP(unsigned int  n, Real x)
+{
+  switch (n)
+  {
+    case 0:
+      return 1;
+
+    case 1:
+      return x;
+
+    case 2:
+      return 0.5 * (3 * pow(x, 2) - 1);
+
+    case 3:
+      return  0.5 * (5 * pow(x, 3) - 3 * x);
+
+    case 4:
+      return 0.125 * (35 * pow(x, 4) - 30 * pow(x, 2) + 3);
+
+    case 5:
+      return 0.125 * (63 * pow(x, 5) - 70 * pow(x, 3) + 15 * x);
+
+    default:
+      mooseError("Implementation of Legendre polynomials goes up to n = 5");
+  }
+}
+
 void
 ElasticRecoilCrossSectionBaseUserObject::execute()
 {

@@ -24,5 +24,17 @@ SimpleERXS::SimpleERXS(const InputParameters & parameters)
 Real
 SimpleERXS::elasticCrossSection()
 {
- return 1;
+  return 1;
+}
+
+Real
+SimpleERXS::neutronSpectrum()
+{
+  return 1;
+}
+
+Real
+SimpleERXS::scatteringLaw()
+{
+  return 1;
 }
