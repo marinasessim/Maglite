@@ -9,6 +9,11 @@
 // libmesh includes
 #include "libmesh/quadrature.h"
 
+// Outputs
+#include <cassert>
+#include <fstream>
+#include <stdexcept>
+
 template <>
 InputParameters
 validParams<ElasticRecoilCrossSectionUserObject>()
@@ -57,7 +62,6 @@ ElasticRecoilCrossSectionUserObject::ElasticRecoilCrossSectionUserObject(const I
     _console << pt(0) << std::endl;
   }
   _quad_weights = _quadrature->get_weights();
-
 
 }
 
@@ -191,7 +195,7 @@ ElasticRecoilCrossSectionUserObject::execute()
             _elastic_recoil_xs[l][t][g] += 0.5 * std::cos(0.5 * theta_c) * _scattering_law.value(Ei, Point()) *
                                           legendreP(l, std::sin(0.5 * theta_c)) * w_T * w_theta / _xi_g[g];
 
-            _console << _elastic_recoil_xs[l][t][g] << std::endl;
+            _console << l << ',' << t << ',' << g << ':' << _elastic_recoil_xs[l][t][g] << std::endl;
           }
         }
       }
@@ -202,4 +206,23 @@ ElasticRecoilCrossSectionUserObject::execute()
 void
 ElasticRecoilCrossSectionUserObject::finalize()
 {
+  std::ofstream output_file;
+  output_file.open ("erxs_output.csv");
+
+  unsigned int T = _recoil_energy_limits.size() - 1;
+  unsigned int G = _neutron_energy_limits.size() - 1;
+
+for (unsigned int l = 0; l < _L; ++l)
+{
+  for (unsigned int g = 0; g < G; ++g) // g rows
+  {
+    for (unsigned int t = 0; t < T; ++t) // t columns
+    {
+      output_file << _elastic_recoil_xs[0][t][g] << ',';
+    }
+      output_file << std::endl; // l matrices
+  }
+  output_file << std::endl << std::endl;
+}
+  output_file.close();
 }

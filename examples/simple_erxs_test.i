@@ -23,7 +23,7 @@
      # Inputs
      isotope_type = 1
      atomic_mass = 100
-     recoil_energy_limits = '1e4 1e3 1e2 1e1'
+     recoil_energy_limits = '1e5 1e4 1e3 1e2 1e1'
      neutron_energy_limits = '20e6 1e6 1e3 1e1'
 
      # Functions
@@ -45,13 +45,13 @@
   # t is equal to Ei
   [./elastic_recoil_xs]
      type = ParsedFunction
-     value = '1 + 0.0000001 * t'
+     value = '1'
   [../]
 
   # t is equal to mu_c
   [./scattering_law]
       type = ParsedFunction
-     value = '1 - 0.5 * t'
+     value = '0.5'
   [../]
 []
 
