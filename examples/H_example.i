@@ -43,8 +43,11 @@
 
   # t is equal to Ei
   [./elastic_xs]
-     type = ConstantFunction
-     value = '1e6'
+     type = PiecewiseLinear
+     data_file = H1elastic.csv
+     xy_in_file_only = false
+     format = columns
+     scale_factor = 1
   [../]
 
   # t is equal to mu_c
