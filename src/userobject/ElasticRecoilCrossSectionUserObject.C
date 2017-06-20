@@ -132,46 +132,50 @@ ElasticRecoilCrossSectionUserObject::execute()
       }
     }
 
-    /// Loop over all recoil energy bins
     for (unsigned int l = 0; l < _L; ++l)
     {
-      for (unsigned int t = 0; t < _T; ++t)
+      for (unsigned int g = 0; g < _G; ++g)
       {
-        Real T_max = _recoil_energy_limits[t];
-        Real T_min = _recoil_energy_limits[t + 1];
+        Real E_max = _neutron_energy_limits[g];
+        Real E_min = _neutron_energy_limits[g + 1];
 
-        /// Loop over quadrature points within the current recoil bin [T_min, T_max]
-        for (unsigned int i_T = 0; i_T < _quad_points.size(); ++i_T)
+        for (unsigned int i_E = 0; i_E < _quad_points.size(); ++i_E)
         {
-          Real T_i = 0.5 * (T_max - T_min) * _quad_points[i_T] + 0.5 * (T_max + T_min);
-          Real w_T = 0.5 * _quad_weights[i_T] * (T_max - T_min);
+          Real E = 0.5 * (E_max - E_min) * _quad_points[i_E] + 0.5 * (E_max + E_min);
+          Real w_E = 0.5 * _quad_weights[i_E] * (E_max - E_min);
 
-          /// Loop over quadrature points to integrate over theta_c [-pi, pi]
-          for (unsigned int i_theta = 0; i_theta < _quad_points.size(); ++i_theta)
+          Real max_recoil_energy = _gamma * E;
+          for (unsigned int t = 0; t < _T; ++t)
           {
-            Real theta_c = libMesh::pi * _quad_points[i_theta];
-            Real w_theta = _quad_weights[i_theta] * libMesh::pi;
+            Real T_max = _recoil_energy_limits[t];
+            Real T_min = _recoil_energy_limits[t + 1];
 
-            /// Calculate the neutron incident energy associated with the combination of T and theta_c
-            Real E_i = 2 * T_i / (_gamma * (1 - std::cos(theta_c)));
-
-            /// Find neutron energy group that E_i belongs to
-            Real threshold = (T_i / (1 - _alpha));
-            if ( E_i > threshold && E_i < _neutron_energy_limits[0] && E_i > _neutron_energy_limits[_G])
+            for (unsigned int i_T = 0; i_T < _quad_points.size(); ++i_T)
             {
-              unsigned int g = findNeutronEnergyGroup(E_i);
+              Real T = 0.5 * (T_max - T_min) * _quad_points[i_T] + 0.5 * (T_max + T_min);
+              Real w_T = 0.5 * _quad_weights[i_T] * (T_max - T_min);
+
+              if (T > max_recoil_energy)
+                continue;
+
+              Real cos_theta_c = 1 - 2 * T / (_gamma * E);
+              Real mu_0 = 1;
+              //Real sin_theta_c = std::sqrt(1 - cos_theta_c * cos_theta_c);
+              unsigned int g = findNeutronEnergyGroup(E);
 
               /// Save this contribution (g -> t) to the summation of the erxs
-              _erxs_coeff[l][t][g] += libMesh::pi * _elastic_xs.value(E_i, Point()) * _neutron_spectrum.value(E_i, Point()) *
-                                            std::cos(0.5 * theta_c) * _scattering_law.value(E_i, Point()) *
-                                            legendreP(l, std::sin(0.5 * theta_c)) * w_T * w_theta / _xi_g[g];
-
+//_console << _elastic_xs.value(E, Point()) << " " <<  _neutron_spectrum.value(E, Point()) << " "
+//        <<   cos_theta_c << " " << _scattering_law.value(E, Point()) << " "
+//        <<  " " << legendreP(l, sin_theta_c) << " " << w_T << " " << w_E << " " << _xi_g[g] << std::endl;
+              _erxs_coeff[l][t][g] += libMesh::pi * _elastic_xs.value(E, Point()) * _neutron_spectrum.value(E, Point()) *
+                                            _scattering_law.value(E, Point()) *
+                                            legendreP(l, mu_0) * w_T * w_E / _xi_g[g];
             }
           }
         }
       }
     }
-  }
+}
 
 void
 ElasticRecoilCrossSectionUserObject::finalize()
