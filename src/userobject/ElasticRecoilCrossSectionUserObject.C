@@ -1,6 +1,6 @@
-/****************************************************************/
-/*            Elastic Recoil Cross Section                      */
-/****************************************************************/
+/******************************************************************************/
+/*                          Elastic Recoil Cross Section                      */
+/******************************************************************************/
 
 // MOOSE includes
 #include "ElasticRecoilCrossSectionUserObject.h"
@@ -56,7 +56,6 @@ ElasticRecoilCrossSectionUserObject::ElasticRecoilCrossSectionUserObject(const I
     _quad_points.push_back(pt(0));
   }
   _quad_weights = _quadrature->get_weights();
-
   _alpha = pow(((_atomic_mass - 1)/(_atomic_mass + 1)),2);
   _gamma = 4 * _atomic_mass / std::pow(( _atomic_mass + 1),2);
   _G = _neutron_energy_limits.size() - 1;
@@ -91,13 +90,13 @@ ElasticRecoilCrossSectionUserObject::initialize()
   _xi_g.resize(_G);
   for (unsigned int g = 0; g < _G; ++g)
   {
-    Real E_max = _neutron_energy_limits[g];
-    Real E_min = _neutron_energy_limits[g + 1];
+    Real E_u = _neutron_energy_limits[g];
+    Real E_l = _neutron_energy_limits[g + 1];
 
     for (unsigned int p = 0; p < _quad_points.size(); ++p)
     {
-      Real E = 0.5 * (E_max - E_min) * _quad_points[p] + 0.5 * (E_max + E_min);
-      Real w_E = 0.5 * _quad_weights[p] * (E_max - E_min);
+      Real E = 0.5 * (E_u - E_l) * _quad_points[p] + 0.5 * (E_u + E_l);
+      Real w_E = 0.5 * _quad_weights[p] * (E_u - E_l);
 
       _xi_g[g] += w_E * _neutron_spectrum.value(E, Point());
     }
@@ -122,59 +121,66 @@ void
 ElasticRecoilCrossSectionUserObject::execute()
 {
   /// Size the cross section array
-    _erxs_coeff.resize(_L);
-    for (unsigned int l = 0; l < _L; ++l)
+  _erxs_coeff.resize(_L);
+  for (unsigned int l = 0; l < _L; ++l)
+  {
+    _erxs_coeff[l].resize(_T);
+    for (unsigned int t = 0; t < _T; ++t)
     {
-      _erxs_coeff[l].resize(_T);
-      for (unsigned int t = 0; t < _T; ++t)
-      {
-        _erxs_coeff[l][t].resize(_G);
-      }
+      _erxs_coeff[l][t].resize(_G);
     }
+  }
 
-    for (unsigned int l = 0; l < _L; ++l)
+  for (unsigned int l = 0; l < _L; ++l)
+  {
+    for (unsigned int g = 0; g < _G; ++g)
     {
-      for (unsigned int g = 0; g < _G; ++g)
+      Real E_u = _neutron_energy_limits[g];
+      Real E_l = _neutron_energy_limits[g + 1];
+
+      for (unsigned int i_E = 0; i_E < _quad_points.size(); ++i_E)
       {
-        Real E_max = _neutron_energy_limits[g];
-        Real E_min = _neutron_energy_limits[g + 1];
+        Real E = 0.5 * (E_u - E_l) * _quad_points[i_E] + 0.5 * (E_u + E_l);
+        Real w_E = 0.5 * _quad_weights[i_E] * (E_u - E_l);
 
-        for (unsigned int i_E = 0; i_E < _quad_points.size(); ++i_E)
+        Real T_max = _gamma * E;
+        for (unsigned int t = 0; t < _T; ++t)
         {
-          Real E = 0.5 * (E_max - E_min) * _quad_points[i_E] + 0.5 * (E_max + E_min);
-          Real w_E = 0.5 * _quad_weights[i_E] * (E_max - E_min);
+          Real T_u = _recoil_energy_limits[t];
+          Real T_l = _recoil_energy_limits[t + 1];
 
-          Real max_recoil_energy = _gamma * E;
-          for (unsigned int t = 0; t < _T; ++t)
+          /// Case III: T_max < interval, stop
+          if (T_max < T_l)
+            continue; // Breaks for loop
+
+          /// Case II: T_max inside interval, refit
+          if (T_max > T_l && T_max < T_u)
+            T_u = T_max; // Refit to new interval between T_l and T_max
+
+          /// Case I: T_max > interval, ok
+          /// Case II also utilizes this piece of code with T_u = T_max
+          for (unsigned int i_T = 0; i_T < _quad_points.size(); ++i_T)
           {
-            Real T_max = _recoil_energy_limits[t];
-            Real T_min = _recoil_energy_limits[t + 1];
+            Real T = 0.5 * (T_u - T_l) * _quad_points[i_T] + 0.5 * (T_u + T_l);
+            Real w_T = 0.5 * _quad_weights[i_T] * (T_u - T_l);
 
-            for (unsigned int i_T = 0; i_T < _quad_points.size(); ++i_T)
-            {
-              Real T = 0.5 * (T_max - T_min) * _quad_points[i_T] + 0.5 * (T_max + T_min);
-              Real w_T = 0.5 * _quad_weights[i_T] * (T_max - T_min);
+            /// Calculate cosine of recoil angle in CM frame
+            Real mu_c = 1 - 2 * T / (E * _gamma);
 
-              if (T > max_recoil_energy)
-                continue;
+            /// Calculate cosine of recoil angle in Lab frame
+            Real mu_L =  sqrt((1 - mu_c) / 2);
 
-              Real cos_theta_c = 1 - 2 * T / (_gamma * E);
-              Real mu_0 = 1;
-              //Real sin_theta_c = std::sqrt(1 - cos_theta_c * cos_theta_c);
-              unsigned int g = findNeutronEnergyGroup(E);
-
-              /// Save this contribution (g -> t) to the summation of the erxs
-//_console << _elastic_xs.value(E, Point()) << " " <<  _neutron_spectrum.value(E, Point()) << " "
-//        <<   cos_theta_c << " " << _scattering_law.value(E, Point()) << " "
-//        <<  " " << legendreP(l, sin_theta_c) << " " << w_T << " " << w_E << " " << _xi_g[g] << std::endl;
-              _erxs_coeff[l][t][g] += libMesh::pi * _elastic_xs.value(E, Point()) * _neutron_spectrum.value(E, Point()) *
-                                            _scattering_law.value(E, Point()) *
-                                            legendreP(l, mu_0) * w_T * w_E / _xi_g[g];
-            }
+            /// Calculate contribution to cross section coefficients
+            _erxs_coeff[l][t][g] += 2 * libMesh::pi / _xi_g[g] *
+                                    _elastic_xs.value(E,Point()) *
+                                    _neutron_spectrum.value(E, Point()) *
+                                    _scattering_law.value(mu_c, Point()) *
+                                    legendreP(l, mu_L) * w_T * w_E;
           }
         }
       }
     }
+  }
 }
 
 void
@@ -200,7 +206,9 @@ ElasticRecoilCrossSectionUserObject::finalize()
       }
       output_file << std::endl;
     }
-    output_file << std::endl << std::endl;
+
+    if (l < _L - 1)
+      output_file << std::endl << std::endl;
   }
   output_file.close();
 }
