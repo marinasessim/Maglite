@@ -4,6 +4,8 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
+#include "ElasticRecoilCrossSectionUserObject.h"
+
 template <>
 InputParameters
 validParams<MagliteApp>()
@@ -46,6 +48,7 @@ MagliteApp__registerObjects(Factory & factory)
 void
 MagliteApp::registerObjects(Factory & factory)
 {
+  registerUserObject(ElasticRecoilCrossSectionUserObject);
 }
 
 // External entry point for dynamic syntax association
