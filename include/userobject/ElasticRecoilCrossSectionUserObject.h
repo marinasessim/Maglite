@@ -1,6 +1,3 @@
-/****************************************************************/
-/*            Elastic Recoil Cross Section                      */
-/****************************************************************/
 
 #ifndef ELASTICRECOILCROSSSECTIONUSEROBJECT_H
 #define ELASTICRECOILCROSSSECTIONUSEROBJECT_H
@@ -19,8 +16,6 @@ class ElasticRecoilCrossSectionUserObject : public GeneralUserObject
 public:
   ElasticRecoilCrossSectionUserObject(const InputParameters & parameters);
 
-  virtual ~ElasticRecoilCrossSectionUserObject();
-
   virtual void initialize() override;
 
   virtual void execute() override;
@@ -28,63 +23,69 @@ public:
   virtual void finalize() override;
 
 protected:
-  /// Function representing the neutron spectrum
+  // Function representing the neutron spectrum
   Function & _neutron_spectrum;
 
-  /// Function representing the scattering law
+  // Function representing the scattering law
   Function & _scattering_law;
 
-  /// Function representing the elastic cross section
+  // Function representing the elastic cross section
   Function & _elastic_xs;
 
-  /// Method that implements Legendre polynomails up to n = 5
+  // Method that implements Legendre polynomails up to n = 10
   Real legendreP(unsigned int n, Real x);
 
-  /// Method that finds the neutron energy group given a neutron energy
+  // Method that implements Shifted Legendre polynomails (0, 1) up to n = 8
+  Real shiftedLP(unsigned int n, Real x);
+
+  // Method that finds the neutron energy group given a neutron energy
   unsigned int findNeutronEnergyGroup(Real energy);
 
   QBase * _quadrature;
 
-  ///@{ Extract 1 dim quadrature rule from libmesh and store in points and weights
+  //@{ 400 points and weights for 1 dim Gaussian quadrature rule
   std::vector<Real> _quad_points;
   std::vector<Real> _quad_weights;
-  ///@}
+  //@}
 
-  /// Order of Legendre polynomials, defaults to 5
+  // Order of Legendre polynomials
   unsigned int _L;
 
-  /// Number of recoil energy bins
+  // Number of recoil energy bins
   unsigned int _T;
 
-  ///Number of neutron energy groups
+  // Number of neutron energy groups
   unsigned int _G;
 
-  /// Atomic mass of the isotope being analyzed
+  // Atomic mass of the isotope being analyzed
   const Real _atomic_mass;
 
-  /// Gamma is a mass fraction that limits the energy transfer from the neutron to the recoil
+  // Mass fraction that limits the energy transfer from the neutron to the recoil
   Real _gamma;
 
-  /// Limits that characterize the neutron energy groups, must be in descending order
-  const std::vector<Real> _neutron_energy_limits;
-
-  /// Limits that characterize the recoil energy bins, must be in descending order
-  const std::vector<Real> _recoil_energy_limits;
-
-  /// Neutron spectrum in our environment, usually 1/E
-  std::vector<Real> _xi_g;
-
-  /// alpha = 4 * A / (A + 1)^2
+  // Mass fraction
   Real _alpha;
 
-  /**
-   * Elastic recoil cross section (g -> t)
-   * L (order of Legendre polynomials expansion)
-   * T (recoil energy bins)
-   * G (neutron energy groups)
-   */
+  // Limits that characterize the neutron energy groups, must be in descending order
+  const std::vector<Real> _neutron_energy_limits;
+
+  // Limits that characterize the recoil energy bins, must be in descending order
+  const std::vector<Real> _recoil_energy_limits;
+
+  // Varible for the neutron spectrum
+  std::vector<Real> _xi_g;
+
+  // Elastic recoil cross section coefficients for the expansion in Legendre polynomials
   std::vector<std::vector<std::vector<Real>>> _erxs_coeff;
-  std::vector<std::vector<std::vector<Real>>> _erxs_sum;
+
+  // Varible to store the maximum and minimum possible cosines in the Lab frame
+  std::vector<std::vector<std::vector<Real>>> _save_mu_L;
+
+  /// Output file with the elastic recoil cross section coefficients for the expansion in Legendre polynomials
+  std::string _erxs_file_name;
+
+  /// Output file with the maximum and minimum possible cosines in the Lab frame
+  std::string _mu_L_file_name;
 };
 
 #endif

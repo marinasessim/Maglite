@@ -1,6 +1,3 @@
-#                                Case E                                      #
-# neutron spectrum = 1/E; cross section = data; A = 12; scattering law = 1/2 #
-#                                                                            #
 
 [Mesh]
  type = GeneratedMesh
@@ -25,10 +22,12 @@
      type = ElasticRecoilCrossSectionUserObject
 
      # Inputs
-     atomic_mass = 1
-     legendre_order = 1
-     neutron_energy_limits = '2 1'
-     recoil_energy_limits = '10.0 9.9 9.8 9.7 9.6 9.5 9.4 9.3 9.2 9.1 9.0 8.9 8.8 8.7 8.6 8.5 8.4 8.3 8.2 8.1 8.0 7.9 7.8 7.7 7.6 7.5 7.4 7.3 7.2 7.1 7.0 6.9 6.8 6.7 6.6 6.5 6.4 6.3 6.2 6.1 6.0 5.9 5.8 5.7 5.6 5.5 5.4 5.3 5.2 5.1 5.0 4.9 4.8 4.7 4.6 4.5 4.4 4.3 4.2 4.1 4.0 3.9 3.8 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0 2.9 2.8 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.9 1.8 1.7 1.6 1.5 1.4 1.3 1.2 1.1 1.0 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1 0.0'
+     erxs_output_file_name = erxs_C_spectrum_xs_out.csv
+     mu_L_output_file_name = erxs_C_spectrum_xs_mu_L_out.csv
+     atomic_mass = 12
+     legendre_order = 7
+     neutron_energy_limits = '1e7 1e6 1e5 1e4 1e3 1e2 1e1 1e0'
+     recoil_energy_limits = '2097152 1048576 524288 262144 131072 65536 32768 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1 0'
 
      # Functions
      neutron_spectrum = neutron_spectrum
@@ -49,7 +48,7 @@
   # t is equal to Ei
   [./elastic_xs]
     type = PiecewiseLinear
-    data_file = C12_input.csv
+    data_file = H1_input.csv
     xy_in_file_only = false
     format = columns
   [../]

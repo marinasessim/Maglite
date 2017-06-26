@@ -1,3 +1,4 @@
+
 [Mesh]
  type = GeneratedMesh
  dim = 1
@@ -21,12 +22,12 @@
      type = ElasticRecoilCrossSectionUserObject
 
      # Inputs
+     erxs_output_file_name = erxs_H_spectrum_out.csv
+     mu_L_output_file_name = erxs_H_spectrum_mu_L_out.csv
      atomic_mass = 1
-     legendre_order = 1
-     recoil_energy_limits = '2 1.95 1.9 1.85 1.8 1.75 1.7 1.65 1.6 1.55 1.5 1.45 1.4 1.35 1.3
-                             1.25 1.2 1.15 1.1 1.05 1.0 0.95 0.9 0.85 0.8 0.75 0.7 0.65 0.6 0.55 0.5 0.45
-                             0.4 0.35 0.3 0.25 0.2 0.15 0.1 0.05 0.0' # 11 groups
-     neutron_energy_limits = '2 1' # 5 groups
+     legendre_order = 7
+     neutron_energy_limits = '1e7 1e6 1e5 1e4 1e3 1e2 1e1 1e0'
+     recoil_energy_limits = '2097152 1048576 524288 262144 131072 65536 32768 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1 0'
 
      # Functions
      neutron_spectrum = neutron_spectrum
@@ -41,7 +42,7 @@
 [Functions]
   [./neutron_spectrum]
      type = ParsedFunction
-     value = '1'
+     value = '1/t'
   [../]
 
   # t is equal to Ei
