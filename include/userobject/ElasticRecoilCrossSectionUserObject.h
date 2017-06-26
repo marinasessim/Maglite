@@ -56,7 +56,7 @@ protected:
   /// Number of recoil energy bins
   unsigned int _T;
 
-  ///Number of neutron energy groups
+  /// Number of neutron energy groups
   unsigned int _G;
 
   /// Atomic mass of the isotope being analyzed
@@ -85,6 +85,9 @@ protected:
    */
   std::vector<std::vector<std::vector<Real>>> _erxs_coeff;
   std::vector<std::vector<std::vector<Real>>> _erxs_sum;
+
+  /// Name of the output file
+  std::string _file_name;
 };
 
 #endif

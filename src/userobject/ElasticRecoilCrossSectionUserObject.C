@@ -33,6 +33,8 @@ validParams<ElasticRecoilCrossSectionUserObject>()
       "elastic_xs", "Function representing the elastic cross section");
   params.addParam<unsigned int>(
       "legendre_order", 5, "Order of Legendre polynomials; Default to P5, where n = 0, ..., 5");
+  params.addParam<std::string>(
+      "output_file_name", "erxs_output.csv", "Name of the output file (.csv)");
   return params;
 }
 
@@ -44,7 +46,8 @@ ElasticRecoilCrossSectionUserObject::ElasticRecoilCrossSectionUserObject(const I
     _L(getParam<unsigned int>("legendre_order")),
     _atomic_mass(getParam<Real>("atomic_mass")),
     _neutron_energy_limits(getParam<std::vector<Real>>("neutron_energy_limits")),
-    _recoil_energy_limits(getParam<std::vector<Real>>("recoil_energy_limits"))
+    _recoil_energy_limits(getParam<std::vector<Real>>("recoil_energy_limits")),
+    _file_name(getParam<std::string>("output_file_name"))
 {
   // See "enum_order.h and enum_quadrature_type.h"
   _quadrature = QBase::build(QGAUSS, 1, FORTYTHIRD).release();
@@ -120,15 +123,15 @@ void
 ElasticRecoilCrossSectionUserObject::execute()
 {
   // Size the cross section array
-  _erxs_coeff.resize(_L);
-  for (unsigned int l = 0; l <= _L; ++l)
+  _erxs_coeff.resize(_L + 1);
+  for (unsigned int l = 0; l < _L + 1; ++l)
   {
     _erxs_coeff[l].resize(_T);
     for (unsigned int t = 0; t < _T; ++t)
       _erxs_coeff[l][t].resize(_G);
   }
 
-  for (unsigned int l = 0; l <= _L; ++l)
+  for (unsigned int l = 0; l < _L + 1; ++l)
   {
     for (unsigned int g = 0; g < _G; ++g)
     {
@@ -185,25 +188,33 @@ ElasticRecoilCrossSectionUserObject::finalize()
 {
   /*
    * Write the elastic recoil cross section (g -> t) output file
-   * G (neutron energy groups) rows
-   * T (recoil energy bins) columns
+   *
+   *            l = 0              l = 1              l = ...
+   *       g = 0, 1, 2, ...   g = 0, 1, 2, ...   g = 0, 1, 2, ...
+   *  t 0
+   *    1
+   *    2
+   *    .
+   *    .
+   *    .
+   *
    */
-  std::ofstream output_file;
-  output_file.open ("erxs_output.csv");
-  for (unsigned int l = 0; l <= _L; ++l)
-  {
-    for (unsigned int g = 0; g < _G; ++g)
-    {
-      for (unsigned int t = 0; t < _T; ++t)
-        if (t < _T - 1)
-          output_file << _erxs_coeff[l][t][g] << ',';
-        else
-          output_file << _erxs_coeff[l][t][g];
-      output_file << std::endl;
-    }
 
-    if (l != _L)
-      output_file << std::endl << std::endl;
+  std::ofstream output_file;
+  output_file.open(_file_name);
+  for (unsigned int t = 0; t < _T; ++t)
+  {
+    for (unsigned int l = 0; l < _L + 1; ++l)
+    {
+      for (unsigned int g = 0; g < _G; ++g)
+      {
+        if (g < _G - 1)
+        output_file << _erxs_coeff[l][t][g] << ',';
+        else
+        output_file << _erxs_coeff[l][t][g];
+      }
+    }
+    output_file << std::endl;
   }
   output_file.close();
 }
