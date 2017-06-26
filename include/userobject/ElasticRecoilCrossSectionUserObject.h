@@ -19,9 +19,6 @@ class ElasticRecoilCrossSectionUserObject : public GeneralUserObject
 public:
   ElasticRecoilCrossSectionUserObject(const InputParameters & parameters);
 
-  /**
-   * Class destructor
-   */
   virtual ~ElasticRecoilCrossSectionUserObject();
 
   virtual void initialize() override;
@@ -77,7 +74,7 @@ protected:
   /// Neutron spectrum in our environment, usually 1/E
   std::vector<Real> _xi_g;
 
-  /// Alpha
+  /// alpha = 4 * A / (A + 1)^2
   Real _alpha;
 
   /**
