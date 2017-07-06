@@ -60,7 +60,7 @@ for t in t_list:
     plt.subplot(4, 1, t_id + 1)
     plt.plot(mu_L_list,x,'bo-')
     plt.xlim(0,1)
-    plt.ylim(-0.005,0.025)
+    #plt.ylim(-0.005,0.025)
     plt.grid()
     t_id += 1
 

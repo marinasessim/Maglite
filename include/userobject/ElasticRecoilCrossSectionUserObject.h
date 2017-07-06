@@ -87,8 +87,8 @@ protected:
    * G (neutron energy groups)
    */
   std::vector<std::vector<std::vector<Real>>> _erxs_coeff;
-  std::vector<std::vector<std::vector<Real>>> _erxs_sum;
-  std::vector<std::vector<Real>> _save_mu_L;
+
+  std::vector<std::vector<std::vector<Real>>> _save_mu_L;
 
   /// Name of the output file
   std::string _file_name;

@@ -176,7 +176,7 @@ ElasticRecoilCrossSectionUserObject::findNeutronEnergyGroup(Real energy)
     if (energy < _neutron_energy_limits[g] && energy > _neutron_energy_limits[g + 1])
       return g;
   }
-  /// C++ is stupid so this is necessary
+  // C++ is stupid so this is necessary
   mooseError("Should never get here");
   return 0;
 }
@@ -193,10 +193,14 @@ ElasticRecoilCrossSectionUserObject::execute()
       _erxs_coeff[l][t].resize(_G);
   }
 
+  // Size the lab frame cosine array
   _save_mu_L.resize(_T);
   for (unsigned int t = 0; t < _T; ++t)
+  {
     _save_mu_L[t].resize(_G);
-
+    for (unsigned int g = 0; g < _G; ++g)
+      _save_mu_L[t][g].resize(1);
+  }
 
   for (unsigned int l = 0; l < _L + 1; ++l)
   {
@@ -216,12 +220,19 @@ ElasticRecoilCrossSectionUserObject::execute()
           Real T_u = _recoil_energy_limits[t];
           Real T_l = _recoil_energy_limits[t + 1];
 
-Real mu_C_max = 1 - 2 * T_u / E_l;
-if (mu_C_max < -1)
-  mu_C_max = -1;
-Real mu_C_min = 1 - 2 * T_l / E_u;
-Real mu_L_max = sqrt((1 - mu_C_max) / 2);
-Real mu_L_min = sqrt((1 - mu_C_min) / 2);
+          /*
+           * Calculate possible range of angles according to neutron energy group
+           * and recoil energy bin. This approach avoids unphysical behavior (negative
+           * values due to convergence issue of expansion) of recoil cross section.
+           */
+          Real mu_C_max = 1 - 2 * T_u / E_l;
+          if (mu_C_max < -1)
+            mu_C_max = -1;
+          Real mu_C_min = 1 - 2 * T_l / E_u;
+          Real mu_L_max = sqrt((1 - mu_C_max) / 2);
+          Real mu_L_min = sqrt((1 - mu_C_min) / 2);
+          if (mu_L_min < 1e-10)
+            mu_L_min = 0;
 
           // Case III: T_max < interval, stop
           if (T_max < T_l)
@@ -239,23 +250,34 @@ Real mu_L_min = sqrt((1 - mu_C_min) / 2);
             Real w_T = 0.5 * _quad_weights[i_T] * (T_u - T_l);
 
             // Calculate cosine of recoil angle in CM frame
-            Real mu_c = 1 - 2 * T / (E * _gamma);
+            Real mu_C = 1 - 2 * T / (E * _gamma);
 
             // Calculate cosine of recoil angle in Lab frame
-            Real mu_L = sqrt((1 - mu_c) / 2);
-if (mu_L * 1.1 > mu_L_max  || mu_L / 1.1 < mu_L_min)
-  _console << "Violated min/max mu_L; E " << E << " T " << E << " mu_L " << mu_L << std::endl;
-else
-  _console << "good" << std::endl;
-            _save_mu_L[t][g] =  mu_L;
+            Real mu_L = sqrt((1 - mu_C) / 2);
+/*
+            if (mu_L * 1.1 > mu_L_max  || mu_L / 1.1 < mu_L_min)
+              _console << "Violated min/max mu_L; E " << E << " T " << E << " mu_L " << mu_L << std::endl;
+            else
+              _console << "good" << std::endl;
+*/
+            // Save maximum and mininum lab frame cosine values
+            _save_mu_L[t][g][0] = mu_L_max;
+            _save_mu_L[t][g][1] = mu_L_min;
 
-            //_console << E << ", "  << T << ", " << mu_c << ", " << mu_L << std::endl;
+            //_console << E << ", "  << T << ", " << mu_C << ", " << mu_L << std::endl;
 
-            /// Calculate contribution to cross section coefficients
-            _erxs_coeff[l][t][g] += 1 / _xi_g[g] *
+            // Calculate contribution to cross section coefficients
+            // Divided by (mu_L_max - mu_L_min) as a normalization factor for the new shifted legendre polynomials
+            /*
+             * We calculated the maximum and minimum possible cosines and from that we shifted our legendre pol.
+             * We recalculated the equations including this new integration limits.
+             * The 1/(mu_L_max - mu_L_min) comes from this normalization to the new interval.
+             VERIFY max and min values!!!!
+             */
+            _erxs_coeff[l][t][g] += 1 / _xi_g[g] / (mu_L_max - mu_L_min) *
                                     _elastic_xs.value(E,Point()) *
                                     _neutron_spectrum.value(E, Point()) *
-                                    _scattering_law.value(mu_c, Point()) *
+                                    _scattering_law.value(mu_C, Point()) *
                                     shiftedLP(l, mu_L) * w_T * w_E;
           }
         }
@@ -299,6 +321,11 @@ ElasticRecoilCrossSectionUserObject::finalize()
   }
   output_file.close();
 
+  /*
+   * Writes output file with maximum and mininum cosines in the lab frame (mu_L)
+   * It follows same structure as ERXS outfile file, but saves the mu_L_max and
+   * mu_L_min per g -> t combination.
+   */
   std::ofstream output_file2;
   output_file2.open("mu_L_out.csv");
   for (unsigned int t = 0; t < _T; ++t)
@@ -306,9 +333,9 @@ ElasticRecoilCrossSectionUserObject::finalize()
       for (unsigned int g = 0; g < _G; ++g)
       {
         if (g < _G - 1)
-        output_file2 << _save_mu_L[t][g] << ',';
+        output_file2 << _save_mu_L[t][g][0] << ',' << _save_mu_L[t][g][1] << ',';
         else
-        output_file2 << _save_mu_L[t][g];
+        output_file2 << _save_mu_L[t][g][0] << ',' << _save_mu_L[t][g][1];
       }
     output_file2 << std::endl;
   }
