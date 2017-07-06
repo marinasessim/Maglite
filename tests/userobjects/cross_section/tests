@@ -1,0 +1,37 @@
+[Tests]
+  [./test_anlt]
+    type = 'CSVDiff'
+    input = 'case_anlt.i'
+    csvdiff = 'case_anlt_out.csv'
+  [../]
+  [./test_A]
+    type = 'CSVDiff'
+    input = 'case_A.i'
+    csvdiff = 'case_A_out.csv'
+  [../]
+  [./test_B]
+    type = 'CSVDiff'
+    input = 'case_B.i'
+    csvdiff = 'case_B_out.csv'
+  [../]
+  [./test_C]
+    type = 'CSVDiff'
+    input = 'case_C.i'
+    csvdiff = 'case_C_out.csv'
+  [../]
+  [./test_D]
+    type = 'CSVDiff'
+    input = 'case_D.i'
+    csvdiff = 'case_D_out.csv'
+  [../]
+  [./test_E]
+    type = 'CSVDiff'
+    input = 'case_E.i'
+    csvdiff = 'case_E_out.csv'
+  [../]
+  [./test_F]
+    type = 'CSVDiff'
+    input = 'case_F.i'
+    csvdiff = 'case_F_out.csv'
+  [../]
+[]

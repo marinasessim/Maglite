@@ -1,6 +1,6 @@
-#                            Case C                                      #
-# neutron spectrum = 1/E; cross section = 1; A = 1; scattering law = 1/2 #
-#                                                                        #
+#                          Analytical Comparison                       #
+# neutron spectrum = 1; cross section = 1; A = 1; scattering law = 1/2 #
+#                                                                      #
 
 [Mesh]
  type = GeneratedMesh
@@ -25,11 +25,10 @@
      type = ElasticRecoilCrossSectionUserObject
 
      # Inputs
-     output_file_name = case_C_out.csv
+     output_file_name = case_test_shiftedLP_out.csv
      atomic_mass = 1
-     legendre_order = 5
-     neutron_energy_limits = '1e7 1e6 1e5 1e4 1e3 1e2 1e1 1e0'
-     recoil_energy_limits = '2097152 1048576 524288 262144 131072 65536 32768 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1 0'
+     neutron_energy_limits = '2 1'
+     recoil_energy_limits = '2.2 2.1 2 1.9 1.8 1.7 1.6 1.5 1.4 1.3 1.2 1.1 1.0 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1 0.0'
 
      # Functions
      neutron_spectrum = neutron_spectrum
@@ -44,7 +43,7 @@
 [Functions]
   [./neutron_spectrum]
      type = ParsedFunction
-     value = '1/t'
+     value = '1'
   [../]
 
   # t is equal to Ei

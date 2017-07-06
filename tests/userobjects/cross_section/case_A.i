@@ -1,6 +1,6 @@
-#                            Case C                                      #
-# neutron spectrum = 1/E; cross section = 1; A = 1; scattering law = 1/2 #
-#                                                                        #
+#                             Case A                                   #
+# neutron spectrum = 1; cross section = 1; A = 1; scattering law = 1/2 #
+#                                                                      #
 
 [Mesh]
  type = GeneratedMesh
@@ -25,7 +25,7 @@
      type = ElasticRecoilCrossSectionUserObject
 
      # Inputs
-     output_file_name = case_C_out.csv
+     output_file_name = case_A_out.csv
      atomic_mass = 1
      legendre_order = 5
      neutron_energy_limits = '1e7 1e6 1e5 1e4 1e3 1e2 1e1 1e0'
@@ -44,7 +44,7 @@
 [Functions]
   [./neutron_spectrum]
      type = ParsedFunction
-     value = '1/t'
+     value = '1'
   [../]
 
   # t is equal to Ei

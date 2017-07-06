@@ -37,8 +37,11 @@ protected:
   /// Function representing the elastic cross section
   Function & _elastic_xs;
 
-  /// Method that implements Legendre polynomails up to n = 5
+  /// Method that implements Legendre polynomails up to n = 10
   Real legendreP(unsigned int n, Real x);
+
+  /// Method that implements Shifted Legendre polynomails (0, 1)up to n = 4
+  Real shiftedLP(unsigned int n, Real x);
 
   /// Method that finds the neutron energy group given a neutron energy
   unsigned int findNeutronEnergyGroup(Real energy);
@@ -85,6 +88,7 @@ protected:
    */
   std::vector<std::vector<std::vector<Real>>> _erxs_coeff;
   std::vector<std::vector<std::vector<Real>>> _erxs_sum;
+  std::vector<std::vector<Real>> _save_mu_L;
 
   /// Name of the output file
   std::string _file_name;
