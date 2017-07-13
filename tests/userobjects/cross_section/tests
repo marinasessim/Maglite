@@ -1,0 +1,7 @@
+[Tests]
+  [./erxs_analytical_test]
+    type = 'CSVDiff'
+    input = 'erxs_analytical.i'
+    csvdiff = 'erxs_analytical_out.csv'
+  [../]
+[]
